@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\ScanDocumentRequest;
 use App\Http\Resources\Api\V1\DocumentScanResource;
 use App\Services\DocumentScanService;
+use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
@@ -24,25 +25,23 @@ final class DocumentScanController extends Controller
                 $request->user(),
             );
         } catch (RuntimeException $exception) {
-            return response()->json([
-                'message' => $exception->getMessage(),
-                'code' => 'DOCUMENT_SCAN_FAILED',
-            ], 422);
+            return ApiResponse::error($exception->getMessage(), 'DOCUMENT_SCAN_FAILED', 422);
         }
 
-        return response()->json([
-            'message' => 'Document scan completed.',
-            'data' => new DocumentScanResource($scan),
-        ], 201);
+        return ApiResponse::success(
+            'Document scan completed.',
+            new DocumentScanResource($scan),
+            201,
+        );
     }
 
     public function show(Request $request, int $documentScan): JsonResponse
     {
         $scan = $request->user()->documentScans()->findOrFail($documentScan);
 
-        return response()->json([
-            'message' => 'Document scan retrieved.',
-            'data' => new DocumentScanResource($scan),
-        ]);
+        return ApiResponse::success(
+            'Document scan retrieved.',
+            new DocumentScanResource($scan),
+        );
     }
 }

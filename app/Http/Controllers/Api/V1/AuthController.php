@@ -7,6 +7,7 @@ use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Models\User;
+use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -21,12 +22,9 @@ final class AuthController extends Controller
             'password' => $request->string('password')->toString(),
         ]);
 
-        return response()->json([
-            'message' => 'Registration successful.',
-            'data' => [
-                'user' => new UserResource($user),
-                'token' => $user->createToken('mobile')->plainTextToken,
-            ],
+        return ApiResponse::success('Registration successful.', [
+            'user' => new UserResource($user),
+            'token' => $user->createToken('mobile')->plainTextToken,
         ], 201);
     }
 
@@ -40,18 +38,16 @@ final class AuthController extends Controller
         $user = User::where('email', $credentials['email'])->first();
 
         if ($user === null || ! Hash::check($credentials['password'], $user->password)) {
-            return response()->json([
-                'message' => 'The provided credentials are incorrect.',
-                'code' => 'INVALID_CREDENTIALS',
-            ], 422);
+            return ApiResponse::error(
+                'The provided credentials are incorrect.',
+                'INVALID_CREDENTIALS',
+                422,
+            );
         }
 
-        return response()->json([
-            'message' => 'Login successful.',
-            'data' => [
-                'user' => new UserResource($user),
-                'token' => $user->createToken('mobile')->plainTextToken,
-            ],
+        return ApiResponse::success('Login successful.', [
+            'user' => new UserResource($user),
+            'token' => $user->createToken('mobile')->plainTextToken,
         ]);
     }
 
@@ -59,18 +55,13 @@ final class AuthController extends Controller
     {
         $request->user()->currentAccessToken()?->delete();
 
-        return response()->json([
-            'message' => 'Logout successful.',
-        ]);
+        return ApiResponse::success('Logout successful.');
     }
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json([
-            'message' => 'Current user retrieved.',
-            'data' => [
-                'user' => new UserResource($request->user()),
-            ],
+        return ApiResponse::success('Current user retrieved.', [
+            'user' => new UserResource($request->user()),
         ]);
     }
 }

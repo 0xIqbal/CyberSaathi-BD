@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\AnalyzeUrlRequest;
 use App\Services\UrlAnalysisService;
+use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use InvalidArgumentException;
 
@@ -17,17 +18,14 @@ final class UrlAnalysisController extends Controller
     public function __invoke(AnalyzeUrlRequest $request): JsonResponse
     {
         try {
-            return response()->json([
-                'message' => 'URL analysis completed.',
-                'data' => $this->urlAnalysisService->analyze(
+            return ApiResponse::success(
+                'URL analysis completed.',
+                $this->urlAnalysisService->analyze(
                     $request->string('url')->toString(),
                 ),
-            ]);
+            );
         } catch (InvalidArgumentException $exception) {
-            return response()->json([
-                'message' => $exception->getMessage(),
-                'code' => 'INVALID_URL',
-            ], 422);
+            return ApiResponse::error($exception->getMessage(), 'INVALID_URL', 422);
         }
     }
 }
