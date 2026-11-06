@@ -48,24 +48,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       TextFormField(
                         controller: _name,
                         decoration: const InputDecoration(labelText: 'Name'),
-                        validator: (value) => value == null || value.trim().isEmpty
-                            ? 'Enter your name.'
-                            : null,
+                        validator: (value) =>
+                            value == null || value.trim().isEmpty
+                                ? 'Enter your name.'
+                                : null,
                       ),
                       const SizedBox(height: AppSpacing.md),
                       TextFormField(
                         controller: _email,
                         keyboardType: TextInputType.emailAddress,
                         decoration: const InputDecoration(labelText: 'Email'),
-                        validator: (value) => value == null || !value.contains('@')
-                            ? 'Enter a valid email address.'
-                            : null,
+                        validator: (value) =>
+                            value == null || !value.contains('@')
+                                ? 'Enter a valid email address.'
+                                : null,
                       ),
                       const SizedBox(height: AppSpacing.md),
                       TextFormField(
                         controller: _password,
                         obscureText: true,
-                        decoration: const InputDecoration(labelText: 'Password'),
+                        decoration:
+                            const InputDecoration(labelText: 'Password'),
                         validator: (value) => value == null || value.length < 8
                             ? 'Use at least 8 characters.'
                             : null,
@@ -74,7 +77,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       TextFormField(
                         controller: _confirmation,
                         obscureText: true,
-                        decoration: const InputDecoration(labelText: 'Confirm password'),
+                        decoration: const InputDecoration(
+                            labelText: 'Confirm password'),
                         validator: (value) => value != _password.text
                             ? 'Passwords do not match.'
                             : null,
@@ -83,19 +87,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           widget.authViewModel.errorMessage!,
-                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error),
                         ),
                       ],
                       const SizedBox(height: AppSpacing.lg),
                       FilledButton(
-                        onPressed: widget.authViewModel.status == AuthStatus.submitting
-                            ? null
-                            : _submit,
-                        child: widget.authViewModel.status == AuthStatus.submitting
+                        onPressed:
+                            widget.authViewModel.status == AuthStatus.submitting
+                                ? null
+                                : _submit,
+                        child: widget.authViewModel.status ==
+                                AuthStatus.submitting
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Text('Create account'),
                       ),

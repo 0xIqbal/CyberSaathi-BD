@@ -41,7 +41,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('Welcome back', style: Theme.of(context).textTheme.headlineSmall),
+                      Text('Welcome back',
+                          style: Theme.of(context).textTheme.headlineSmall),
                       const SizedBox(height: AppSpacing.xs),
                       const Text('Sign in to continue securely.'),
                       const SizedBox(height: AppSpacing.xl),
@@ -49,15 +50,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _email,
                         keyboardType: TextInputType.emailAddress,
                         decoration: const InputDecoration(labelText: 'Email'),
-                        validator: (value) => value == null || !value.contains('@')
-                            ? 'Enter a valid email address.'
-                            : null,
+                        validator: (value) =>
+                            value == null || !value.contains('@')
+                                ? 'Enter a valid email address.'
+                                : null,
                       ),
                       const SizedBox(height: AppSpacing.md),
                       TextFormField(
                         controller: _password,
                         obscureText: true,
-                        decoration: const InputDecoration(labelText: 'Password'),
+                        decoration:
+                            const InputDecoration(labelText: 'Password'),
                         validator: (value) => value == null || value.isEmpty
                             ? 'Enter your password.'
                             : null,
@@ -66,19 +69,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           widget.authViewModel.errorMessage!,
-                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.error),
                         ),
                       ],
                       const SizedBox(height: AppSpacing.lg),
                       FilledButton(
-                        onPressed: widget.authViewModel.status == AuthStatus.submitting
-                            ? null
-                            : _submit,
-                        child: widget.authViewModel.status == AuthStatus.submitting
+                        onPressed:
+                            widget.authViewModel.status == AuthStatus.submitting
+                                ? null
+                                : _submit,
+                        child: widget.authViewModel.status ==
+                                AuthStatus.submitting
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Text('Sign in'),
                       ),

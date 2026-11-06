@@ -14,6 +14,18 @@ final class DocumentScanTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_document_scan_accepts_flutter_web_preflight_requests(): void
+    {
+        $this->withHeaders([
+            'Origin' => 'http://localhost:5173',
+            'Access-Control-Request-Method' => 'POST',
+            'Access-Control-Request-Headers' => 'authorization,content-type',
+        ])->options('/api/v1/document-scans')
+            ->assertNoContent()
+            ->assertHeader('Access-Control-Allow-Origin', '*')
+            ->assertHeader('Access-Control-Allow-Methods');
+    }
+
     public function test_authenticated_user_can_scan_a_private_docx(): void
     {
         Storage::fake('local');

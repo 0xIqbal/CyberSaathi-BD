@@ -4,7 +4,13 @@ import '../../../../core/network/api_exception.dart';
 import '../../data/models/user.dart';
 import '../../data/repositories/auth_repository.dart';
 
-enum AuthStatus { initializing, unauthenticated, authenticated, submitting, error }
+enum AuthStatus {
+  initializing,
+  unauthenticated,
+  authenticated,
+  submitting,
+  error
+}
 
 class AuthViewModel extends ChangeNotifier {
   AuthViewModel(this._repository);
@@ -14,12 +20,14 @@ class AuthViewModel extends ChangeNotifier {
   User? user;
   String? errorMessage;
 
-  bool get isAuthenticated => status == AuthStatus.authenticated && user != null;
+  bool get isAuthenticated =>
+      status == AuthStatus.authenticated && user != null;
 
   Future<void> restoreSession() async {
     try {
       user = await _repository.restore();
-      status = user == null ? AuthStatus.unauthenticated : AuthStatus.authenticated;
+      status =
+          user == null ? AuthStatus.unauthenticated : AuthStatus.authenticated;
     } on ApiException {
       user = null;
       status = AuthStatus.unauthenticated;

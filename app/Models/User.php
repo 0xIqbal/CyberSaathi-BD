@@ -24,6 +24,11 @@ class User extends Authenticatable
         return $this->hasMany(DocumentScan::class);
     }
 
+    public function incidents(): HasMany
+    {
+        return $this->hasMany(Incident::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *
