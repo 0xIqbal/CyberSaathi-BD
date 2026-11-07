@@ -1,232 +1,408 @@
 # Previous Work Summary
 
-## Project Structure
+## Project Overview
 
-- Moved the Laravel application from `backend/` to the repository root.
-- Kept the Flutter application under `mobile/`.
-- Added project documentation under `docs/`.
-- Added workspace Copilot instructions under `.github/copilot-instructions.md`.
+CyberSaathi BD is a cybersecurity-focused application with a Laravel 13
+backend and a Flutter mobile/web client. The project currently includes
+authentication, suspicious URL analysis, document privacy scanning, and a
+Digital Evidence Organizer.
 
-## Flutter Application
+The Laravel application is in the repository root and the Flutter application
+is under `mobile/`.
 
-- Created a Material 3 design system with:
-  - Deep navy and teal colors
-  - Typography and spacing tokens
-  - Buttons, inputs, cards, app bars, status indicators, loading states, empty states, and error states
-- Added modular feature structure for `url_checker`.
-- Added authentication foundation:
-  - API service
-  - Secure token storage
-  - Authentication repository
-  - Authentication state management
-  - Login screen
-  - Registration screen
-  - Protected navigation
-- Added platform-aware API URLs:
-  - Web: `http://127.0.0.1:8000/api/v1`
-  - Android emulator: `http://10.0.2.2:8000/api/v1`
+## Initial Architecture and Design
 
-## Laravel Backend
-
-- Set up Laravel 13 with Sanctum.
-- Implemented authentication:
-  - Registration
-  - Login
-  - Logout
-  - Current user endpoint
-  - Protected API routes
-  - Form Request validation
-  - Consistent JSON responses
-- Added reusable API response and request structures.
+- Defined functional and non-functional requirements.
+- Designed a modular Laravel API and Flutter feature architecture.
 - Added API versioning under `/api/v1`.
-- Added health endpoint:
+- Chose Sanctum for API authentication.
+- Chose private file storage for sensitive documents and evidence.
+- Planned MySQL support while using SQLite locally.
+- Prioritized privacy, ownership checks, input validation, maintainability,
+  explainable analysis, and realistic capstone scope.
+- Deferred advanced features such as public evidence sharing, automatic legal
+  reporting, live URL fetching, and large-scale asynchronous AI workflows.
+
+## Flutter Application Foundation
+
+Created a Material 3 design system using deep navy and teal branding:
+
+- Colors and accessible contrast
+- Typography and spacing tokens
+- Buttons and input fields
+- Cards and app bars
+- Status indicators
+- Loading, empty, and error states
+
+The Flutter project uses modular features, Riverpod state management, Dio, and
+`file_picker`. Platform-aware API URLs are configured as:
+
+```text
+Web:             http://127.0.0.1:8000/api/v1
+Android emulator: http://10.0.2.2:8000/api/v1
+```
+
+## Laravel Authentication
+
+Implemented Sanctum-protected authentication:
+
+- Registration
+- Login
+- Logout
+- Current-user endpoint
+- Form Request validation
+- Consistent JSON responses
+- Protected navigation in Flutter
+- Secure token storage in Flutter
+
+Health endpoint:
 
 ```text
 GET /api/v1/health
 ```
 
-## URL Analyzer
+## Suspicious URL Analyzer
 
-- Added protected URL analysis endpoint:
+Added:
 
 ```text
 POST /api/v1/url-analyses
 ```
 
-- Added:
-  - URL validation and normalization
-  - IP-host detection
-  - Punycode detection
-  - Suspicious pattern detection
-  - Excessive subdomain detection
-  - Protected brand similarity checks
-  - Explainable risk indicators
-  - Rate limiting
-- The analyzer never opens, resolves, or fetches submitted URLs.
+The analyzer includes:
+
+- URL validation and normalization
+- IP-host detection
+- Punycode detection
+- Suspicious pattern detection
+- Excessive subdomain detection
+- Protected-brand similarity checks
+- Explainable risk indicators
+- Rate limiting
+
+Submitted URLs are treated as data and are never opened, resolved, fetched, or
+redirected by the backend.
 
 ## Document Privacy Scanner
 
-- Added protected document scanning endpoints:
+Added:
 
 ```text
 POST /api/v1/document-scans
-GET /api/v1/document-scans/{id}
+GET  /api/v1/document-scans/{id}
 ```
 
-- Supports PDF and DOCX files.
-- Added:
-  - File signature validation
-  - Private generated storage paths
-  - SHA-256 hashes
-  - Bounded text extraction
-  - Phone detection
-  - Email detection
-  - Configurable student ID detection
-  - Context-aware password-like detection
-  - Masked findings with positions
-  - User ownership checks
-  - Upload rate limiting
-  - The backend now attempts to generate a masked Bangla privacy explanation
-    through local Ollama, with a safe fallback message when Ollama is unavailable.
+Supported formats are PDF and DOCX. The scanner includes:
 
-  ## Recent Step-by-Step Integration Work
+- File signature validation
+- Private generated storage paths
+- SHA-256 hashes
+- Bounded text extraction
+- Phone, email, student-ID, and password-like detection
+- Masked findings with positions
+- User ownership checks
+- Upload rate limiting
+- Optional masked Bangla privacy explanations through local Ollama
 
-  ### 1. Flutter document scanner foundation
+### Flutter Document Scanner Integration
 
-  - Added the Flutter document scanner feature under:
+Added the feature under:
 
-  ```text
-  mobile/lib/features/document_scanner/
-  ```
+```text
+mobile/lib/features/document_scanner/
+```
 
-  - Added:
-    - `DocumentScan` and `DocumentFinding` models
-    - Document scan repository
-    - Riverpod notifier and state
-    - File picker integration
-    - Upload progress
-    - Scanning progress
-    - Result and finding cards
-    - Error and empty states
-    - Dashboard navigation
+It includes models, repository, Riverpod state, file picking, upload and scan
+progress, result cards, finding cards, empty states, error states, and
+dashboard navigation.
 
-  ### 2. Flutter API client corrections
+The shared Flutter API client was rewritten to restore valid generic return
+types, valid Dart syntax, multipart support, and 120-second connect, send, and
+receive timeouts. Authenticated requests use:
 
-  - Rewrote `mobile/lib/core/network/api_service.dart`.
-  - Fixed corrupted generic return types such as:
+```text
+Authorization: Bearer <token>
+```
 
-  ```dart
-  Future<Map<String, dynamic>>
-  ```
+Flutter Web uploads use file bytes, while native uploads use the local file
+path. The Laravel upload field is `document`. API and Dio failures include
+status and backend response diagnostics in development logs.
 
-  - Added 120-second connect, send, and receive timeouts.
-  - Added multipart upload support.
-  - Corrected authentication headers to:
+`DocumentScan.fromJson()` supports both direct objects and Laravel responses
+wrapped in a `data` object, including nested findings and `ai_explanation`.
 
-  ```text
-  Authorization: Bearer <token>
-  ```
+## AI Test Endpoint and CORS
 
-  ### 3. Flutter Web upload support
+Added the temporary protected endpoint:
 
-  - Updated document upload handling for both platforms:
-    - Flutter Web uses `MultipartFile.fromBytes(...)`.
-    - Native platforms use `MultipartFile.fromFileSync(...)`.
-  - Confirmed that the Laravel multipart field name is:
+```text
+POST /api/v1/ai/test
+```
 
-  ```text
-  document
-  ```
+It uses Sanctum and has authenticated/unauthenticated feature tests.
 
-  - Added logging for API and Dio upload failures, including:
-    - Error message
-    - Status code
-    - Error code
-    - Backend response errors
-    - Stack trace
+Added local-development CORS configuration for:
 
-  ### 4. Nested Laravel response parsing
+```text
+api/*
+sanctum/csrf-cookie
+```
 
-  - Updated `DocumentScan.fromJson()` to support both:
-    - A direct scan object
-    - Laravel's wrapped response format:
+All origins, methods, and headers are allowed for local development. A
+document-upload OPTIONS preflight test was added and passed.
 
-  ```json
-  {
-    "message": "Document scan completed.",
-    "data": {}
-  }
-  ```
+## Digital Evidence Organizer Backend
 
-  - The parser now reads `findings` and `ai_explanation` from the nested `data`
-    object.
+### Database foundation
 
-  ### 5. AI explanation display fix
+Added these migrations without changing existing authentication or scanner
+migrations:
 
-  - Ensured the upload repository parses the response with
-    `DocumentScan.fromJson()`.
-  - Updated the Riverpod notifier to preserve the complete scan returned from
-    the upload response.
-  - Avoided replacing the result with a follow-up response that may omit the
-    transient `ai_explanation` field.
-  - Added an AI advisory card to the scanner result screen.
+```text
+database/migrations/2026_11_06_142238_create_incidents_table.php
+database/migrations/2026_11_06_142239_create_evidence_items_table.php
+database/migrations/2026_11_06_142240_create_incident_events_table.php
+```
 
-  ### 6. Temporary protected AI endpoint
+The tables provide:
 
-  - Added:
+- User-owned incidents with title, category, description, status, and
+  timestamps
+- Evidence items belonging to incidents
+- Image, PDF, URL, and note evidence types
+- Private storage paths and original filenames
+- SHA-256 fingerprints
+- Incident timeline events with `occurred_at`
+- Foreign keys, cascade deletion, and useful indexes
 
-  ```text
-  POST /api/v1/ai/test
-  ```
+Uploaded file contents are never stored in MySQL.
 
-  - Protected the endpoint with Laravel Sanctum.
-  - Added a consistent JSON success response.
-  - Added feature tests for authenticated and unauthenticated requests.
+### Models and relationships
 
-  ### 7. Flutter Web CORS support
+Added:
 
-  - Added `config/cors.php`.
-  - Enabled CORS for:
-    - `api/*`
-    - `sanctum/csrf-cookie`
-  - Allowed all origins, methods, and headers for local development.
-  - Added a preflight test for:
+```text
+app/Models/Incident.php
+app/Models/EvidenceItem.php
+app/Models/IncidentEvent.php
+```
 
-  ```text
-  OPTIONS /api/v1/document-scans
-  ```
+Relationships:
 
-  - Confirmed that preflight requests return HTTP `204` before authentication
-    and file validation.
+- `User hasMany Incident`
+- `Incident belongsTo User`
+- `Incident hasMany EvidenceItem`
+- `Incident hasMany IncidentEvent`
+- `EvidenceItem belongsTo Incident`
+- `IncidentEvent belongsTo Incident`
 
-  ### 8. Validation completed
+Models use explicit `$fillable` fields. `IncidentEvent` uses `occurred_at`
+instead of Laravel's normal model timestamps.
 
-  - Flutter document scanner tests passed.
-  - Flutter analysis completed without compilation errors.
-  - Laravel CORS preflight test passed.
-  - Laravel Pint formatting was run.
+### Incident Management API
 
-  ## Current Document Scanner Notes
+Added ownership policy, Form Requests, API resources, controller, routes, and
+feature tests:
 
-  - Laravel document scanning currently performs extraction synchronously.
-  - AI explanation generation may be slow or unavailable when Ollama is not
-    running.
-  - The backend should eventually move AI explanation generation to a queue or
-    separate endpoint so deterministic document scanning does not depend on
-    Ollama response time.
+```text
+app/Policies/IncidentPolicy.php
+app/Http/Requests/Api/V1/StoreIncidentRequest.php
+app/Http/Requests/Api/V1/UpdateIncidentRequest.php
+app/Http/Resources/Api/V1/IncidentResource.php
+app/Http/Resources/Api/V1/IncidentEventResource.php
+app/Http/Controllers/Api/V1/IncidentController.php
+tests/Feature/Api/IncidentApiTest.php
+```
+
+Endpoints:
+
+```text
+GET    /api/v1/incidents
+POST   /api/v1/incidents
+GET    /api/v1/incidents/{incident}
+PATCH  /api/v1/incidents/{incident}
+DELETE /api/v1/incidents/{incident}
+```
+
+All endpoints require Sanctum. Users can only access their own incidents.
+Listing is paginated and includes evidence counts. Creating an incident and
+changing its status creates timeline events.
+
+### Evidence Management API
+
+Added:
+
+```text
+app/Http/Requests/Api/V1/StoreEvidenceRequest.php
+app/Services/EvidenceService.php
+app/Http/Controllers/Api/V1/EvidenceController.php
+app/Http/Resources/Api/V1/EvidenceItemResource.php
+tests/Feature/Api/EvidenceApiTest.php
+```
+
+Endpoints:
+
+```text
+POST /api/v1/incidents/{incident}/evidence
+GET  /api/v1/incidents/{incident}/evidence/{evidence}/download
+```
+
+Evidence behavior:
+
+- Supports `image`, `pdf`, `url`, and `note`.
+- Image and PDF uploads are limited to 10 MB.
+- Files are stored under private `storage/app/private/evidence/`.
+- UUID filenames are generated.
+- SHA-256 hashes are computed from uploaded file contents.
+- URL and note content is stored in the description field.
+- Evidence creation automatically records a timeline event.
+- Downloads verify incident ownership and evidence membership.
+- Stored files are removed if database persistence fails.
+
+## Flutter Digital Evidence Vault
+
+Added the feature under:
+
+```text
+mobile/lib/features/evidence_vault/
+```
+
+### Models
+
+Created separate:
+
+```text
+data/models/incident.dart
+data/models/evidence_item.dart
+data/models/incident_event.dart
+```
+
+The models safely parse IDs, titles, categories, statuses, SHA-256 hashes,
+dates, nested evidence lists, nested timeline lists, and Laravel responses
+containing a nested `data` object.
+
+### Repository and providers
+
+Added:
+
+```text
+data/repositories/evidence_repository.dart
+presentation/viewmodels/evidence_provider.dart
+```
+
+Repository operations:
+
+```text
+getIncidents()
+createIncident()
+getIncidentDetails(id)
+uploadEvidence(incidentId, file, type, description)
+```
+
+The Riverpod notifier handles loading, saving, validation errors, API errors,
+incident creation, incident detail loading, upload progress, and state
+refreshing after an evidence upload.
+
+### Web and native upload flow
+
+The evidence picker uses `withData: true` so Flutter Web receives file bytes.
+
+Web upload:
+
+```dart
+MultipartFile.fromBytes(file.bytes!, filename: file.name)
+```
+
+Native upload:
+
+```dart
+MultipartFile.fromFileSync(file.path!, filename: file.name)
+```
+
+Multipart fields sent to Laravel are:
+
+```text
+type
+description
+file
+```
+
+After a successful upload, the provider calls
+`getIncidentDetails(incidentId)` and stores the refreshed incident, so the
+attached evidence list updates automatically before the screen is closed.
+
+### Vault screens
+
+- `EvidenceHomeScreen`
+  - Lists user incidents in Material 3 cards
+  - Shows category, status, evidence count, and creation date
+  - Provides refresh, loading, empty, and error states
+  - Provides a create-incident floating action button
+- `CreateIncidentScreen`
+  - Provides title, category, and description fields
+  - Supports `online_scam`, `phishing`, `cyberbullying`,
+    `account_compromise`, `identity_impersonation`, and `other`
+- `IncidentDetailsScreen`
+  - Shows incident details and status
+  - Shows evidence cards and SHA-256 fingerprints
+  - Shows a vertical activity timeline
+- `AddEvidenceScreen`
+  - Supports JPG, JPEG, PNG, PDF, URL, and note evidence
+  - Uses `file_picker`
+  - Shows selected filename, size, and upload progress
+  - Pops after successful upload
+
+The Evidence Vault is connected to the authenticated dashboard.
 
 ## Testing and Validation
 
-- Added Laravel feature and unit tests for authentication, URL analysis, and document scanning.
-- Laravel test suite passed with 30 tests and 100 assertions during the latest backend foundation work.
-- Laravel Pint formatting passed.
-- Flutter SDK and dependencies are installed.
-- A stale Flutter test referencing `MyApp` was identified as a remaining issue during workspace inspection.
+Laravel validation completed:
+
+- Incident CRUD and ownership tests
+- Evidence upload, hashing, event, download, validation, and cross-user tests
+- Database relationship tests
+- Sanctum authentication tests
+- CORS preflight test
+- Laravel Pint formatting
+
+Flutter validation completed:
+
+- Targeted Evidence Vault analysis passed with no issues.
+- Full Flutter test suite passed with 8 tests.
+- Document scanner and URL analyzer regression tests passed.
+
+Existing unrelated analyzer notices remain in older document scanner and URL
+checker files, including development `print` calls and deprecated
+`withOpacity` usage.
+
+## Current Architecture and Security Notes
+
+- API routes are versioned under `/api/v1`.
+- Sanctum protects authenticated endpoints.
+- Flutter sends `Authorization: Bearer <token>`.
+- Uploaded evidence and documents remain private.
+- Ownership is checked before incident access and evidence downloads.
+- Submitted URLs are never fetched or executed.
+- Sensitive document and evidence contents should not be logged unnecessarily.
+- SQLite is used locally; the deployment target supports MySQL.
+- Ollama/Qwen3 remains a local integration and is not exposed directly to
+  Flutter.
 
 ## Current Configuration Notes
 
-- Laravel currently uses SQLite locally.
-- MySQL PHP extensions are available, but MySQL connection settings are not configured.
 - Ollama is installed locally.
-- Qwen3 model integration is not configured yet.
-- Production deployment settings still require hardening, including disabling debug mode and configuring production secrets.
+- Qwen3 model configuration still requires local setup and environment values.
+- Production deployment still requires debug disabling, secret configuration,
+  private storage verification, and production CORS restrictions.
+
+## Recommended Next Steps
+
+- Add focused Flutter tests for Evidence Vault model parsing, repository
+  requests, upload progress, and empty/error states.
+- Add Flutter download support for private evidence files.
+- Add file-content/signature validation beyond extension and MIME checks.
+- Delete private stored files when evidence or incidents are deleted.
+- Add a dedicated evidence policy if evidence operations grow independently of
+  incident ownership.
+- Move Ollama explanation generation to a queue or separate endpoint.
+- Run the complete Laravel suite after the next backend change.

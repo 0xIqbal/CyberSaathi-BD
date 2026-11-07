@@ -46,7 +46,7 @@ class EvidenceRepository {
     int incidentId,
     PlatformFile file,
     String type,
-    String description, {
+    String? description, {
     void Function(int sent, int total)? onSendProgress,
   }) async {
     final multipartFile = file.bytes != null
@@ -63,7 +63,7 @@ class EvidenceRepository {
       '/incidents/$incidentId/evidence',
       fields: {
         'type': type,
-        if (description.trim().isNotEmpty) 'description': description.trim(),
+        'description': description?.trim() ?? '',
         if (multipartFile != null) 'file': multipartFile,
       },
       onSendProgress: onSendProgress,

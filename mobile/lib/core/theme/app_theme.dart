@@ -28,6 +28,7 @@ abstract final class AppTheme {
         color: AppColors.surfaceContainer,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
+        shadowColor: Colors.transparent,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.lg),
@@ -36,7 +37,7 @@ abstract final class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceContainer,
+        fillColor: AppColors.surfaceMuted,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.md,
@@ -49,6 +50,7 @@ abstract final class AppTheme {
         labelStyle: const TextStyle(color: AppColors.textMuted),
         hintStyle: const TextStyle(color: AppColors.textMuted),
         errorStyle: const TextStyle(color: AppColors.danger),
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: _buttonStyle(
@@ -77,11 +79,25 @@ abstract final class AppTheme {
         ),
         side: const BorderSide(color: AppColors.border),
         labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: scheme.primary,
         linearTrackColor: scheme.primaryContainer,
         circularTrackColor: scheme.primaryContainer,
+      ),
+      dividerTheme: const DividerThemeData(
+        color: AppColors.border,
+        space: AppSpacing.lg,
+        thickness: 1,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: AppColors.surfaceContainer,
+        indicatorColor: AppColors.teal100,
+        elevation: 3,
+        labelTextStyle: WidgetStatePropertyAll(
+          TextStyle(fontWeight: FontWeight.w700),
+        ),
       ),
     );
   }

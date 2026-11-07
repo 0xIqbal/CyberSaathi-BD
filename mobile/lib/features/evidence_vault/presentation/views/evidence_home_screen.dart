@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../shared/widgets/app_error_state.dart';
 import '../viewmodels/evidence_provider.dart';
@@ -55,19 +56,38 @@ class _EvidenceHomeScreenState extends ConsumerState<EvidenceHomeScreen> {
                         itemBuilder: (_, index) {
                           final incident = state.incidents[index];
                           return Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(AppRadii.lg),
+                              side: const BorderSide(color: AppColors.border),
+                            ),
                             child: ListTile(
                               contentPadding:
                                   const EdgeInsets.all(AppSpacing.md),
-                              leading: const CircleAvatar(
-                                child: Icon(Icons.folder_outlined),
+                              leading: CircleAvatar(
+                                backgroundColor:
+                                    AppColors.evidenceIndigoBackground,
+                                foregroundColor: AppColors.evidenceIndigo,
+                                child: const Icon(Icons.folder_outlined),
                               ),
-                              title: Text(incident.title),
+                              title: Text(
+                                incident.title,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w800),
+                              ),
                               subtitle: Text(
                                 '${incident.category.replaceAll('_', ' ')} · '
                                 '${incident.evidenceItemsCount} evidence item(s)\n'
                                 '${_formatDate(incident.createdAt)}',
                               ),
-                              trailing: Chip(label: Text(incident.status)),
+                              trailing: Chip(
+                                avatar: const Icon(
+                                  Icons.shield_outlined,
+                                  size: 16,
+                                ),
+                                label: Text(incident.status),
+                              ),
                               onTap: () => Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (_) => IncidentDetailsScreen(

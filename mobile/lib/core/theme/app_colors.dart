@@ -1,28 +1,46 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppColors {
-  static const navy950 = Color(0xFF071A2B);
-  static const navy900 = Color(0xFF0B243B);
-  static const navy800 = Color(0xFF123A56);
-  static const teal700 = Color(0xFF007C83);
-  static const teal600 = Color(0xFF008F95);
-  static const teal100 = Color(0xFFD4F3F1);
-  static const teal50 = Color(0xFFEAF9F8);
+  static const navy950 = Color(0xFF0F172A);
+  static const navy900 = Color(0xFF172033);
+  static const navy800 = Color(0xFF26364F);
+  static const teal700 = Color(0xFF0D9488);
+  static const teal600 = Color(0xFF14B8A6);
+  static const teal100 = Color(0xFFCCFBF1);
+  static const teal50 = Color(0xFFF0FDFA);
+  static const medicalBlue = Color(0xFF2563EB);
+  static const medicalBlueBackground = Color(0xFFEFF6FF);
+  static const documentAmber = Color(0xFFD97706);
+  static const documentAmberBackground = Color(0xFFFEF3C7);
+  static const evidenceIndigo = Color(0xFF4F46E5);
+  static const evidenceIndigoBackground = Color(0xFFEEF2FF);
 
-  static const surface = Color(0xFFF7FAFC);
+  static const surface = Color(0xFFF8FAFC);
   static const surfaceContainer = Color(0xFFFFFFFF);
-  static const surfaceMuted = Color(0xFFE7EEF2);
-  static const border = Color(0xFFD8E2E8);
-  static const text = Color(0xFF12212B);
-  static const textMuted = Color(0xFF52636D);
-  static const success = Color(0xFF18794E);
+  static const surfaceMuted = Color(0xFFF1F5F9);
+  static const border = Color(0xFFE2E8F0);
+  static const text = Color(0xFF172033);
+  static const textMuted = Color(0xFF64748B);
+  static const success = Color(0xFF16A34A);
   static const successBackground = Color(0xFFE4F5EC);
   static const warning = Color(0xFF9A6700);
   static const warningBackground = Color(0xFFFFF4D6);
-  static const danger = Color(0xFFBA1A1A);
+  static const danger = Color(0xFFDC2626);
   static const dangerBackground = Color(0xFFFFEDEA);
   static const info = Color(0xFF1769AA);
   static const infoBackground = Color(0xFFE7F1FB);
+
+  static BoxShadow get softShadow => BoxShadow(
+        color: Colors.black.withValues(alpha: 0.04),
+        blurRadius: 16,
+        offset: const Offset(0, 6),
+      );
+
+  static BoxShadow get cardShadow => BoxShadow(
+        color: navy950.withValues(alpha: 0.07),
+        blurRadius: 20,
+        offset: const Offset(0, 8),
+      );
 
   static const lightScheme = ColorScheme(
     brightness: Brightness.light,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../data/models/url_analysis.dart';
 import '../viewmodels/url_analysis_provider.dart';
@@ -27,11 +28,40 @@ class _UrlCheckerScreenState extends ConsumerState<UrlCheckerScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('URL Checker')),
       body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.md,
+          AppSpacing.lg,
+          AppSpacing.xl,
+        ),
         children: [
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.medicalBlueBackground,
+              borderRadius: BorderRadius.circular(AppRadii.lg),
+              border: Border.all(
+                  color: AppColors.medicalBlue.withValues(alpha: 0.12)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.link_rounded, color: AppColors.medicalBlue),
+                SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text(
+                    'Inspect a link before you open it.',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
           Text(
             'Check a suspicious link',
-            style: Theme.of(context).textTheme.headlineSmall,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
           ),
           const SizedBox(height: AppSpacing.xs),
           const Text('The URL is analyzed without opening or visiting it.'),
@@ -43,20 +73,24 @@ class _UrlCheckerScreenState extends ConsumerState<UrlCheckerScreen> {
             decoration: const InputDecoration(
               labelText: 'URL',
               hintText: 'https://example.com',
+              prefixIcon: Icon(Icons.search_rounded),
             ),
             onSubmitted: (_) => _analyze(),
           ),
           const SizedBox(height: AppSpacing.md),
-          FilledButton.icon(
-            onPressed: state.isLoading ? null : _analyze,
-            icon: state.isLoading
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.security_rounded),
-            label: Text(state.isLoading ? 'Analyzing...' : 'Analyze URL'),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: state.isLoading ? null : _analyze,
+              icon: state.isLoading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.security_rounded),
+              label: Text(state.isLoading ? 'Analyzing...' : 'Analyze URL'),
+            ),
           ),
           if (state.errorMessage != null) ...[
             const SizedBox(height: AppSpacing.lg),
@@ -131,7 +165,10 @@ class _AnalysisResult extends StatelessWidget {
             analysis.aiExplanation!.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
           Card(
-            color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+            color: Theme.of(context)
+                .colorScheme
+                .primaryContainer
+                .withValues(alpha: 0.3),
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
               child: Column(
@@ -147,7 +184,10 @@ class _AnalysisResult extends StatelessWidget {
                       Expanded(
                         child: Text(
                           'এআই নিরাপত্তা বিশ্লেষণ (AI Insight)',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.primary,
                               ),

@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\DocumentScanController;
 use App\Http\Controllers\Api\V1\EvidenceController;
 use App\Http\Controllers\Api\V1\HealthController;
+use App\Http\Controllers\Api\V1\HealthNavigatorController;
 use App\Http\Controllers\Api\V1\IncidentController;
 use App\Http\Controllers\Api\V1\UrlAnalysisController;
 use Illuminate\Support\Facades\Route;
@@ -41,5 +42,13 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/{incident}', [IncidentController::class, 'show']);
         Route::patch('/{incident}', [IncidentController::class, 'update']);
         Route::delete('/{incident}', [IncidentController::class, 'destroy']);
+    });
+
+    Route::middleware('auth:sanctum')->prefix('health-navigator')->group(function (): void {
+        Route::get('/topics', [HealthNavigatorController::class, 'topics']);
+        Route::get('/articles', [HealthNavigatorController::class, 'articles']);
+        Route::get('/articles/{slug}', [HealthNavigatorController::class, 'show']);
+        Route::post('/ask', [HealthNavigatorController::class, 'ask'])
+            ->middleware('throttle:10,1');
     });
 });

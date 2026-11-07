@@ -137,11 +137,16 @@ class EvidenceNotifier extends Notifier<EvidenceState> {
         incidentId,
         file,
         type,
-        description ?? '',
+        description,
         onSendProgress: onSendProgress,
       );
-      await loadIncident(incidentId);
-      state = state.copyWith(saving: false);
+      final refreshedIncident =
+          await _repository.getIncidentDetails(incidentId);
+      state = state.copyWith(
+        selected: refreshedIncident,
+        saving: false,
+        clearError: true,
+      );
       return true;
     } on ApiException catch (error) {
       state = state.copyWith(saving: false, errorMessage: error.message);
