@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../shared/widgets/premium_motion.dart';
 import '../../data/models/health_article.dart';
 import '../providers/health_provider.dart';
 import '../widgets/emergency_warning_card.dart';
@@ -76,7 +77,7 @@ class _HealthChatScreenState extends ConsumerState<HealthChatScreen> {
           ],
           if (state.isAsking) ...[
             const SizedBox(height: AppSpacing.xl),
-            const Center(child: CircularProgressIndicator()),
+            const PremiumReveal(child: _TypingIndicator()),
           ],
           if (state.messages.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.lg),
@@ -154,6 +155,32 @@ class _HealthChatScreenState extends ConsumerState<HealthChatScreen> {
             }),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _TypingIndicator extends StatelessWidget {
+  const _TypingIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: AppColors.teal50,
+      child: const Padding(
+        padding: EdgeInsets.all(AppSpacing.md),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            PulseIcon(
+              icon: Icons.auto_awesome_rounded,
+              color: AppColors.teal700,
+              size: 22,
+            ),
+            SizedBox(width: AppSpacing.sm),
+            Text('উত্তর প্রস্তুত করা হচ্ছে...'),
+          ],
+        ),
       ),
     );
   }

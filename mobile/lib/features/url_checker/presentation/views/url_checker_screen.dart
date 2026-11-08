@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../shared/widgets/premium_motion.dart';
 import '../../data/models/url_analysis.dart';
 import '../viewmodels/url_analysis_provider.dart';
 
@@ -35,27 +36,7 @@ class _UrlCheckerScreenState extends ConsumerState<UrlCheckerScreen> {
           AppSpacing.xl,
         ),
         children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: AppColors.medicalBlueBackground,
-              borderRadius: BorderRadius.circular(AppRadii.lg),
-              border: Border.all(
-                  color: AppColors.medicalBlue.withValues(alpha: 0.12)),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.link_rounded, color: AppColors.medicalBlue),
-                SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Text(
-                    'Inspect a link before you open it.',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const PremiumReveal(child: _UrlIntroBanner()),
           const SizedBox(height: AppSpacing.lg),
           Text(
             'Check a suspicious link',
@@ -92,6 +73,10 @@ class _UrlCheckerScreenState extends ConsumerState<UrlCheckerScreen> {
               label: Text(state.isLoading ? 'Analyzing...' : 'Analyze URL'),
             ),
           ),
+          if (state.isLoading) ...[
+            const SizedBox(height: AppSpacing.sm),
+            const ScanningIndicator(),
+          ],
           if (state.errorMessage != null) ...[
             const SizedBox(height: AppSpacing.lg),
             _MessageCard(
@@ -121,6 +106,42 @@ class _UrlCheckerScreenState extends ConsumerState<UrlCheckerScreen> {
   void _analyze() {
     FocusScope.of(context).unfocus();
     ref.read(urlAnalysisProvider.notifier).analyze(_controller.text);
+  }
+}
+
+class _UrlIntroBanner extends StatelessWidget {
+  const _UrlIntroBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.medicalBlueBackground, Color(0xFFE0F2FE)],
+        ),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        border: Border.all(
+          color: AppColors.medicalBlue.withValues(alpha: 0.14),
+        ),
+      ),
+      child: const Row(
+        children: [
+          PulseIcon(
+            icon: Icons.radar_rounded,
+            color: AppColors.medicalBlue,
+            size: 28,
+          ),
+          SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              'Inspect a link before you open it.',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

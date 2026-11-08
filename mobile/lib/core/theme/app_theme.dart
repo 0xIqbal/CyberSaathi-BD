@@ -11,6 +11,7 @@ abstract final class AppTheme {
       useMaterial3: true,
       scaffoldBackgroundColor: AppColors.surface,
       visualDensity: VisualDensity.adaptivePlatformDensity,
+      fontFamily: 'Noto Sans Bengali',
     );
 
     return base.copyWith(

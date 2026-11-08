@@ -4,3 +4,4 @@ export 'app_empty_state.dart';
 export 'app_error_state.dart';
 export 'app_loading.dart';
 export 'app_status_indicator.dart';
+export 'premium_motion.dart';

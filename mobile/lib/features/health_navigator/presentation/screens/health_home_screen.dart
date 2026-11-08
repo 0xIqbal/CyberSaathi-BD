@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../shared/widgets/app_error_state.dart';
+import '../../../../shared/widgets/premium_motion.dart';
 import '../../data/models/health_article.dart';
 import '../providers/health_provider.dart';
 import 'health_article_screen.dart';
@@ -61,11 +62,13 @@ class _HealthHomeScreenState extends ConsumerState<HealthHomeScreen> {
                   child: ListView(
                     padding: const EdgeInsets.all(AppSpacing.md),
                     children: [
-                      _HeroCard(
-                        onAsk: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const HealthChatScreen(),
+                      PremiumReveal(
+                        child: _HeroCard(
+                          onAsk: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HealthChatScreen(),
+                            ),
                           ),
                         ),
                       ),
@@ -101,13 +104,16 @@ class _HealthHomeScreenState extends ConsumerState<HealthHomeScreen> {
                         )
                       else
                         ...state.filteredArticles.map(
-                          (article) => _ArticleTile(
-                            article: article,
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => HealthArticleScreen(
-                                  slug: article.slug,
+                          (article) => PremiumReveal(
+                            delay: const Duration(milliseconds: 70),
+                            child: _ArticleTile(
+                              article: article,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => HealthArticleScreen(
+                                    slug: article.slug,
+                                  ),
                                 ),
                               ),
                             ),

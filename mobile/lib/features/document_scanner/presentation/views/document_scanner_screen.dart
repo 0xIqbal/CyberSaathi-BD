@@ -2,7 +2,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../shared/widgets/premium_motion.dart';
 import '../../data/models/document_scan.dart';
 import '../viewmodels/document_scan_provider.dart';
 
@@ -17,17 +19,24 @@ class DocumentScannerScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
-          Text('Check document privacy',
-              style: Theme.of(context).textTheme.headlineSmall),
+          const PremiumReveal(child: _DocumentIntro()),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'Check document privacy',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
           const SizedBox(height: AppSpacing.xs),
           const Text(
             'PDF and DOCX files are scanned for masked sensitive findings.',
           ),
           const SizedBox(height: AppSpacing.lg),
-          OutlinedButton.icon(
-            onPressed: state.isBusy ? null : () => _pickFile(ref),
-            icon: const Icon(Icons.attach_file_rounded),
-            label: const Text('Select PDF or DOCX'),
+          PremiumReveal(
+            delay: const Duration(milliseconds: 100),
+            child: OutlinedButton.icon(
+              onPressed: state.isBusy ? null : () => _pickFile(ref),
+              icon: const Icon(Icons.attach_file_rounded),
+              label: const Text('Select PDF or DOCX'),
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           if (state.file != null) _SelectedFile(file: state.file!),
@@ -93,6 +102,42 @@ class DocumentScannerScreen extends ConsumerWidget {
   }
 }
 
+class _DocumentIntro extends StatelessWidget {
+  const _DocumentIntro();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.documentAmberBackground, Color(0xFFFFFBEB)],
+        ),
+        borderRadius: BorderRadius.circular(AppRadii.xl),
+        border: Border.all(
+          color: AppColors.documentAmber.withValues(alpha: 0.16),
+        ),
+      ),
+      child: const Row(
+        children: [
+          PulseIcon(
+            icon: Icons.description_rounded,
+            color: AppColors.documentAmber,
+            size: 34,
+          ),
+          SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              'Review sensitive content before sharing.',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SelectedFile extends StatelessWidget {
   const _SelectedFile({required this.file});
 
@@ -144,7 +189,7 @@ class _ScanResult extends StatelessWidget {
             color: Theme.of(context)
                 .colorScheme
                 .tertiaryContainer
-                .withOpacity(0.3),
+                .withValues(alpha: 0.3),
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
               child: Column(

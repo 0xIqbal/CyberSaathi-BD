@@ -9,6 +9,8 @@ abstract final class AppColors {
   static const teal100 = Color(0xFFCCFBF1);
   static const teal50 = Color(0xFFF0FDFA);
   static const medicalBlue = Color(0xFF2563EB);
+  static const cyan = Color(0xFF22D3EE);
+  static const purple = Color(0xFF8B5CF6);
   static const medicalBlueBackground = Color(0xFFEFF6FF);
   static const documentAmber = Color(0xFFD97706);
   static const documentAmberBackground = Color(0xFFFEF3C7);
