@@ -36,9 +36,9 @@ return [
     ],
 
     'ollama' => [
-        'base_url' => env('OLLAMA_BASE_URL') ?: 'https://api.groq.com/openai/v1',
-        'api_key' => env('OLLAMA_API_KEY', ''),
-        'model' => env('OLLAMA_MODEL') ?: 'openai/gpt-oss-120b',
+        'base_url' => trim((string) env('OLLAMA_BASE_URL', '')) ?: 'https://api.groq.com/openai/v1',
+        'api_key' => trim((string) env('OLLAMA_API_KEY', '')),
+        'model' => trim((string) env('OLLAMA_MODEL', '')) ?: 'openai/gpt-oss-120b',
         'timeout' => (int) env('OLLAMA_TIMEOUT', 60),
         'num_predict' => (int) env('OLLAMA_NUM_PREDICT', 1200),
         'temperature' => (float) env('OLLAMA_TEMPERATURE', 0.3),
