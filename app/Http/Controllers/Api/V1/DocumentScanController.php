@@ -72,14 +72,26 @@ final class DocumentScanController extends Controller
             $prompt = "You are a cyber security and privacy expert. Explain why the following detected sensitive data types pose privacy or security risks if exposed, writing in clear simple Bangla:\n"
                 ."Detected Context (Masked): {$maskedContext}";
 
-            $response = Http::timeout(120)->post('http://127.0.0.1:11434/api/generate', [
-                'model' => 'qwen3:4b',
-                'prompt' => $prompt,
-                'stream' => false,
+            $baseUrl = rtrim((string) config('services.ollama.base_url', 'https://api.groq.com/openai/v1'), '/');
+            $apiKey = trim((string) config('services.ollama.api_key', ''));
+            $model = (string) config('services.ollama.model', 'openai/gpt-oss-120b');
+
+            $http = Http::timeout((int) config('services.ollama.timeout', 60))->acceptJson();
+            if ($apiKey !== '') {
+                $http = $http->withToken($apiKey);
+            }
+
+            $response = $http->post("{$baseUrl}/chat/completions", [
+                'model' => $model,
+                'messages' => [
+                    ['role' => 'user', 'content' => $prompt],
+                ],
+                'max_tokens' => (int) config('services.ollama.num_predict', 1200),
+                'temperature' => (float) config('services.ollama.temperature', 0.3),
             ]);
 
             if ($response->successful()) {
-                return $response->json()['response'] ?? 'AI privacy advice unavailable.';
+                return data_get($response->json(), 'choices.0.message.content') ?? 'AI privacy advice unavailable.';
             }
         } catch (Throwable $e) {
             // Fallback so the scan result returns even if Ollama is unreachable
