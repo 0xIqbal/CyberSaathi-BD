@@ -1,0 +1,7 @@
+com.example.cyber_saathi_bd.app-debug-0 F:\CyberSaathi BD\mobile\android\app\src\debug\res
+com.example.cyber_saathi_bd.app-main-1 F:\CyberSaathi BD\mobile\android\app\src\main\res
+com.example.cyber_saathi_bd.app-pngs-2 F:\CyberSaathi BD\mobile\build\app\generated\res\pngs\debug
+com.example.cyber_saathi_bd.app-updated_navigation_xml-3 F:\CyberSaathi BD\mobile\build\app\generated\updated_navigation_xml\debug
+com.example.cyber_saathi_bd.app-packageDebugResources-4 F:\CyberSaathi BD\mobile\build\app\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.example.cyber_saathi_bd.app-packageDebugResources-5 F:\CyberSaathi BD\mobile\build\app\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.example.cyber_saathi_bd.app-debug-6 F:\CyberSaathi BD\mobile\build\app\intermediates\merged_res\debug\mergeDebugResources

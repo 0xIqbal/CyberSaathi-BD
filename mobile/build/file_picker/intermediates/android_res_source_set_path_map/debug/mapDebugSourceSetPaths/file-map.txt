@@ -1,0 +1,8 @@
+com.mr.flutter.plugin.filepicker.file_picker-debug-0 C:\Users\User\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-10.3.10\android\src\debug\res
+com.mr.flutter.plugin.filepicker.file_picker-main-1 C:\Users\User\AppData\Local\Pub\Cache\hosted\pub.dev\file_picker-10.3.10\android\src\main\res
+com.mr.flutter.plugin.filepicker.file_picker-pngs-2 F:\CyberSaathi BD\mobile\build\file_picker\generated\res\pngs\debug
+com.mr.flutter.plugin.filepicker.file_picker-updated_navigation_xml-3 F:\CyberSaathi BD\mobile\build\file_picker\generated\updated_navigation_xml\debug
+com.mr.flutter.plugin.filepicker.file_picker-mergeDebugResources-4 F:\CyberSaathi BD\mobile\build\file_picker\intermediates\incremental\debug\mergeDebugResources\merged.dir
+com.mr.flutter.plugin.filepicker.file_picker-mergeDebugResources-5 F:\CyberSaathi BD\mobile\build\file_picker\intermediates\incremental\debug\mergeDebugResources\stripped.dir
+com.mr.flutter.plugin.filepicker.file_picker-debug-6 F:\CyberSaathi BD\mobile\build\file_picker\intermediates\merged_res\debug\mergeDebugResources
+com.mr.flutter.plugin.filepicker.file_picker-debug-7 F:\CyberSaathi BD\mobile\build\file_picker\intermediates\packaged_res\debug\packageDebugResources

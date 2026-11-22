@@ -1,0 +1,8 @@
+com.github.dart_lang.jni_flutter-debug-0 C:\Users\User\AppData\Local\Pub\Cache\hosted\pub.dev\jni_flutter-1.0.4+1\android\src\debug\res
+com.github.dart_lang.jni_flutter-main-1 C:\Users\User\AppData\Local\Pub\Cache\hosted\pub.dev\jni_flutter-1.0.4+1\android\src\main\res
+com.github.dart_lang.jni_flutter-pngs-2 F:\CyberSaathi BD\mobile\build\jni_flutter\generated\res\pngs\debug
+com.github.dart_lang.jni_flutter-updated_navigation_xml-3 F:\CyberSaathi BD\mobile\build\jni_flutter\generated\updated_navigation_xml\debug
+com.github.dart_lang.jni_flutter-mergeDebugResources-4 F:\CyberSaathi BD\mobile\build\jni_flutter\intermediates\incremental\debug\mergeDebugResources\merged.dir
+com.github.dart_lang.jni_flutter-mergeDebugResources-5 F:\CyberSaathi BD\mobile\build\jni_flutter\intermediates\incremental\debug\mergeDebugResources\stripped.dir
+com.github.dart_lang.jni_flutter-debug-6 F:\CyberSaathi BD\mobile\build\jni_flutter\intermediates\merged_res\debug\mergeDebugResources
+com.github.dart_lang.jni_flutter-debug-7 F:\CyberSaathi BD\mobile\build\jni_flutter\intermediates\packaged_res\debug\packageDebugResources
