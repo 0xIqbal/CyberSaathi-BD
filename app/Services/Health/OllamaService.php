@@ -13,95 +13,259 @@ final class OllamaService
 {
     /**
      * @param  list<array<string, mixed>>  $context
+     * @return array{
+     *     answer: string,
+     *     warnings: list<string>,
+     *     next_steps: list<string>,
+     *     cited_article_slugs: list<string>
+     * }
      */
     public function answer(
         string $question,
         array $context,
         ?string $language = 'bn',
         bool $isHealthQuestion = true,
-    ): string {
+    ): array {
+        $targetLang = ($language ?? 'bn') === 'en' ? 'English' : 'Bangla (বাংলা লিপি)';
+
         $system = $isHealthQuestion
-            ? 'You are a health information assistant for CyberSaathi BD. '
-                .'CRITICAL REQUIREMENT: You MUST write your entire response ONLY in fluent, simple Bangla '
-                .'script (বাংলা ভাষা). Never output English, Banglish, or Roman script, regardless of the '
-                .'user\'s input language. Use only the supplied reviewed article context. '
-                .'Do not diagnose, prescribe medicines, recommend dosages, or invent facts. '
-                .'This is general education, not a medical diagnosis. Return only the final answer; '
-                .'never reveal private reasoning or internal analysis.'
-            : 'You are a helpful general information assistant for CyberSaathi BD. '
-                .'Answer the user clearly and briefly in the requested language. '
-                .'Do not provide medical diagnosis, prescriptions, or medicine dosages. '
-                .'Return only the final answer; never reveal private reasoning or internal analysis.';
-        $prompt = json_encode([
-            'question' => $question,
-            'requested_language' => $language ?? 'bn',
-            'retrieved_article_context' => $this->compactContext($context),
-        ], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+            ? "You are CyberSaathi BD, a trusted health education assistant for Bangladesh.\n"
+                ."Write a comprehensive, empathetic, well-structured, multi-paragraph educational answer in {$targetLang}.\n"
+                ."Understand Banglish or Bangla input, but output ONLY the final answer in {$targetLang} with zero English thinking or meta-commentary.\n"
+                ."Safety rules:\n"
+                ."- Provide general educational information only. Never claim the user has a specific disease.\n"
+                ."- Never prescribe medicines or invent medication names or dosages.\n"
+                ."- Always advise consulting a qualified doctor.\n"
+                ."- Base facts on the provided reviewed medical articles.\n"
+                ."- Never repeat the user's question.\n\n"
+                ."Format your response in plain text/Markdown:\n"
+                ."Write 4 to 6 detailed, helpful paragraphs with clear bullet points covering overview, daily care/diet/lifestyle, recommended checkups, and warning signs.\n"
+                ."At the very end, include:\n"
+                ."### সতর্কতা\n"
+                ."- (2-3 critical cautions)\n"
+                ."### পরবর্তী করণীয়\n"
+                ."- (2-3 safe actionable next steps)"
+            : "You are CyberSaathi BD. Write a clear, helpful response in {$targetLang}.";
+
+        $articlesText = $this->formatContextText($context);
+        $userPrompt = "User Question: {$question}\n\n"
+            ."Output Language: {$targetLang}\n\n"
+            ."Reviewed Health Reference Articles:\n{$articlesText}";
+
+        $timeout = (int) config('services.ollama.timeout', 60);
+        set_time_limit(0);
+
+        $baseUrl = rtrim((string) config('services.ollama.base_url', 'https://api.groq.com/openai/v1'), '/');
+        $apiKey = (string) config('services.ollama.api_key', '');
+        $model = (string) config('services.ollama.model', 'llama-3.3-70b-versatile');
 
         try {
-            $response = Http::timeout(30)
-                ->acceptJson()
-                ->post(rtrim((string) config('services.ollama.base_url'), '/').'/api/chat', [
-                    'model' => config('services.ollama.model', 'qwen3:4b'),
-                    'stream' => false,
-                    'think' => false,
-                    'messages' => [
-                        ['role' => 'system', 'content' => $system],
-                        ['role' => 'user', 'content' => $prompt],
-                    ],
-                    'options' => [
-                        'num_predict' => 300,
-                        'temperature' => 0.2,
-                        'num_ctx' => 2048,
-                    ],
-                ])
-                ->throw();
+            $request = Http::timeout($timeout)
+                ->connectTimeout(15)
+                ->acceptJson();
+
+            if ($apiKey !== '') {
+                $request = $request->withToken($apiKey);
+            }
+
+            $response = $request->post("{$baseUrl}/chat/completions", [
+                'model' => $model,
+                'messages' => [
+                    ['role' => 'system', 'content' => $system],
+                    ['role' => 'user', 'content' => $userPrompt],
+                ],
+                'max_tokens' => (int) config('services.ollama.num_predict', 1200),
+                'temperature' => (float) config('services.ollama.temperature', 0.3),
+            ])->throw();
         } catch (ConnectionException|RequestException $exception) {
+            Log::error('LLM HTTP failure', [
+                'error' => $exception->getMessage(),
+                'base_url' => $baseUrl,
+                'model' => $model,
+            ]);
             throw new RuntimeException('The health assistant is temporarily unavailable.', 0, $exception);
         }
 
         try {
             $payload = json_decode($response->body(), true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $exception) {
-            Log::warning('Ollama returned invalid JSON.', [
-                'status' => $response->status(),
-                'model' => config('services.ollama.model', 'qwen3:4b'),
-            ]);
-            throw new RuntimeException('The health assistant returned an invalid response.', 0, $exception);
+        } catch (JsonException) {
+            Log::warning('LLM returned invalid envelope JSON.');
+            return $this->fallback($language ?? 'bn');
         }
 
-        $answer = is_array($payload) ? data_get($payload, 'message.content') : null;
-        if (! is_string($answer) || trim($answer) === '') {
-            Log::warning('Ollama returned no final answer.', [
-                'status' => $response->status(),
-                'model' => config('services.ollama.model', 'qwen3:4b'),
-                'response_keys' => is_array($payload) ? array_keys($payload) : [],
-                'has_thinking' => is_array($payload) && is_string(data_get($payload, 'message.thinking')),
-            ]);
-            throw new RuntimeException('The health assistant returned an invalid response.');
+        $rawContent = is_array($payload)
+            ? (data_get($payload, 'choices.0.message.content') ?? data_get($payload, 'message.content'))
+            : null;
+
+        if (! is_string($rawContent) || trim($rawContent) === '') {
+            Log::warning('LLM returned empty content.');
+            return $this->fallback($language ?? 'bn');
         }
 
-        return trim($answer);
+        return $this->parsePlainTextResponse($rawContent, $context, $language ?? 'bn', $question, $isHealthQuestion);
     }
 
     /**
      * @param  list<array<string, mixed>>  $context
-     * @return list<array<string, mixed>>
      */
-    private function compactContext(array $context): array
+    private function formatContextText(array $context): string
     {
-        return array_map(function (array $article): array {
-            foreach ($article as $key => $value) {
-                if (is_string($value)) {
-                    $article[$key] = mb_substr(trim($value), 0, match ($key) {
-                        'content_bn', 'content_en' => 900,
-                        'summary_bn', 'summary_en' => 240,
-                        default => 160,
-                    });
-                }
-            }
+        if ($context === []) {
+            return 'No specific reviewed articles matched.';
+        }
 
-            return $article;
-        }, array_slice($context, 0, 2));
+        $chunks = [];
+        foreach (array_slice($context, 0, 2) as $article) {
+            $title = trim((string) ($article['title_bn'] ?? $article['title_en'] ?? ''));
+            $summary = mb_substr(trim((string) ($article['summary_bn'] ?? $article['summary_en'] ?? '')), 0, 400);
+            $content = mb_substr(trim((string) ($article['content_bn'] ?? $article['content_en'] ?? '')), 0, 1400);
+            $chunks[] = "Title: {$title}\nSummary: {$summary}\nDetails: {$content}";
+        }
+
+        return implode("\n\n---\n\n", $chunks);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $context
+     * @return array{
+     *     answer: string,
+     *     warnings: list<string>,
+     *     next_steps: list<string>,
+     *     cited_article_slugs: list<string>
+     * }
+     */
+    private function parsePlainTextResponse(
+        string $rawContent,
+        array $context,
+        string $language,
+        string $question,
+        bool $isHealthQuestion,
+    ): array {
+        $clean = preg_replace('/<think>.*?<\/think>/is', '', $rawContent) ?? $rawContent;
+        $clean = trim($clean);
+
+        if ($language !== 'en' && preg_match('/^[^\x{0980}-\x{09FF}]+(?=[\x{0980}-\x{09FF}])/u', $clean, $preamble) === 1) {
+            $clean = trim(mb_substr($clean, mb_strlen($preamble[0], 'UTF-8')));
+        }
+
+        $warnings = [];
+        $nextSteps = [];
+
+        if (preg_match('/###\s*(?:সতর্কতা|Warnings)\s*\R(.*?)(?=###\s*(?:পরবর্তী করণীয়|Next Steps)|$)/isu', $clean, $wMatch) === 1) {
+            $warnings = $this->extractBullets($wMatch[1]);
+            $clean = str_replace($wMatch[0], '', $clean);
+        }
+
+        if (preg_match('/###\s*(?:পরবর্তী করণীয়|Next Steps)\s*\R(.*)$/isu', $clean, $nMatch) === 1) {
+            $nextSteps = $this->extractBullets($nMatch[1]);
+            $clean = str_replace($nMatch[0], '', $clean);
+        }
+
+        $answer = trim($clean);
+
+        if ($answer === ''
+            || $this->containsUnsafeMedicalInstruction($answer)
+            || ! $this->matchesRequestedLanguage($answer, $language)
+            || ($question !== '' && $this->isEchoingQuestion($answer, $question))
+            || ($isHealthQuestion && mb_strlen($answer, 'UTF-8') < 25)
+        ) {
+            Log::warning('LLM response rejected by validation.', [
+                'language' => $language,
+                'len' => mb_strlen($answer, 'UTF-8'),
+                'preview' => mb_substr($answer, 0, 200),
+            ]);
+            return $this->fallback($language);
+        }
+
+        $citedSlugs = array_values(array_unique(array_filter(
+            array_map(static fn (array $a): string => (string) ($a['slug'] ?? ''), $context),
+        )));
+
+        return [
+            'answer' => $answer,
+            'warnings' => $warnings,
+            'next_steps' => $nextSteps,
+            'cited_article_slugs' => $citedSlugs,
+        ];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function extractBullets(string $block): array
+    {
+        $lines = preg_split('/\R+/', trim($block)) ?: [];
+        $items = [];
+        foreach ($lines as $line) {
+            $item = trim(preg_replace('/^[-*•\d.)]+\s*/u', '', $line) ?? '');
+            if ($item !== '') {
+                $items[] = $item;
+            }
+        }
+
+        return array_values(array_unique($items));
+    }
+
+    private function isEchoingQuestion(string $answer, string $question): bool
+    {
+        $normalize = static fn (string $text): string => preg_replace(
+            '/[^\p{L}\p{N}]+/u',
+            '',
+            mb_strtolower(trim($text), 'UTF-8'),
+        ) ?? '';
+
+        $cleanAnswer = $normalize($answer);
+        $cleanQuestion = $normalize($question);
+
+        return $cleanAnswer !== '' && $cleanQuestion !== '' && $cleanAnswer === $cleanQuestion;
+    }
+
+    private function containsUnsafeMedicalInstruction(string $answer): bool
+    {
+        $patterns = [
+            '/\b(?:you definitively|you definitely|you have|you are suffering from)\b/i',
+            '/(?:আপনি নিশ্চিতভাবে|আপনার অবশ্যই|আপনাকে).*রোগ/u',
+            '/\btake\s+\d+(?:\.\d+)?\s*(?:mg|mcg|ml|tablet|capsule)s?\b/i',
+            '/(?:খান|সেবন করুন).*\d+(?:\s*(?:mg|মিলিগ্রাম))\b/u',
+            '/\b(?:do not|don\'t)\s+(?:seek|go for)\s+(?:emergency|urgent)\s+(?:care|help)\b/i',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $answer) === 1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function matchesRequestedLanguage(string $answer, string $language): bool
+    {
+        $banglaCharacters = preg_match_all('/[\x{0980}-\x{09FF}]/u', $answer);
+        if ($banglaCharacters === false) {
+            return false;
+        }
+
+        return $language === 'en' ? $banglaCharacters < 5 : $banglaCharacters >= 5;
+    }
+
+    /**
+     * @return array{
+     *     answer: string,
+     *     warnings: list<string>,
+     *     next_steps: list<string>,
+     *     cited_article_slugs: list<string>
+     * }
+     */
+    private function fallback(string $language): array
+    {
+        return [
+            'answer' => $language === 'en'
+                ? 'A safe answer could not be generated from the reviewed health information. Please consult a qualified healthcare professional.'
+                : 'পর্যালোচিত স্বাস্থ্য তথ্য থেকে নিরাপদ উত্তর তৈরি করা যায়নি। একজন যোগ্য স্বাস্থ্যসেবাদানকারীর পরামর্শ নিন।',
+            'warnings' => [],
+            'next_steps' => [],
+            'cited_article_slugs' => [],
+        ];
     }
 }

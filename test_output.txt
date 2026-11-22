@@ -1,0 +1,165 @@
+﻿import 'package:cyber_saathi_bd/core/network/api_service.dart';
+import 'package:cyber_saathi_bd/features/health_navigator/data/models/health_answer.dart';
+import 'package:cyber_saathi_bd/features/health_navigator/data/models/health_article.dart';
+import 'package:cyber_saathi_bd/features/health_navigator/data/models/health_source.dart';
+import 'package:cyber_saathi_bd/features/health_navigator/data/repositories/health_repository.dart';
+import 'package:cyber_saathi_bd/features/health_navigator/presentation/providers/health_provider.dart';
+import 'package:cyber_saathi_bd/features/health_navigator/presentation/screens/health_chat_screen.dart';
+import 'package:cyber_saathi_bd/features/health_navigator/presentation/widgets/emergency_warning_card.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+class _FakeHealthRepository extends HealthRepository {
+  _FakeHealthRepository() : super(ApiService());
+
+  HealthAnswer? mockAnswer;
+  String? lastQuestion;
+
+  @override
+  Future<HealthAnswer> askQuestion(
+    String question, {
+    String language = 'bn',
+  }) async {
+    lastQuestion = question;
+    return mockAnswer ??
+        const HealthAnswer(
+          answer: 'Default test answer',
+          isEmergency: false,
+        );
+  }
+}
+
+void main() {
+  testWidgets('renders health chat screen with suggestions', (tester) async {
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: HealthChatScreen()),
+      ),
+    );
+
+    expect(find.text('স্বাস্থ্য সহায়ক'), findsOneWidget);
+    expect(find.text('আপনার প্রশ্ন লিখুন'), findsOneWidget);
+    expect(find.text('জ্বর হলে কী করব?'), findsOneWidget);
+    expect(find.text('গর্ভাবস্থায় কী কী খেয়াল রাখব?'), findsOneWidget);
+  });
+
+  testWidgets(
+      'submits question and renders long detailed answer without truncation',
+      (tester) async {
+    final fakeRepo = _FakeHealthRepository();
+
+    const detailedLongAnswer =
+        'ডায়াবেটিস একটি দীর্ঘস্থায়ী বিপাকীয় অবস্থা যেখানে রক্তে শর্করার মাত্রা স্বাভাবিকের চেয়ে বেশি থাকে।\n\n'
+        '**কারণ ও ঝুঁকি:**\n'
+        '- পারিবারিক ইতিহাস, স্থূলতা, শারীরিক নিষ্ক্রিয়তা ও অস্বাস্থ্যকর খাদ্যাভ্যাস।\n\n'
+        '**লক্ষণসমূহ:**\n'
+        '- ঘন ঘন প্রস্রাব, অতিরিক্ত তৃষ্ণা, ক্ষুধা বৃদ্ধি ও ওজন হ্রাস।\n\n'
+        '**প্রতিরোধ ও ব্যবস্থাপনা:**\n'
+        '- সুষম খাদ্য গ্রহণ, নিয়মিত হাঁটা এবং মিষ্টি ও প্রক্রিয়াজাত খাবার পরিহার করা।\n\n'
+        '**কখন চিকিৎসকের কাছে যাবেন:**\n'
+        '- নিয়মিত রক্ত পরীক্ষা করান এবং চিকিৎসকের পরামর্শ অনুযায়ী চলুন।';
+
+    fakeRepo.mockAnswer = const HealthAnswer(
+      answer: detailedLongAnswer,
+      isEmergency: false,
+      language: 'bn',
+      responseType: 'health',
+      warnings: [
+        'রক্তে শর্করা খুব বেশি বা খুব কম হলে অজ্ঞান হতে পারেন।',
+      ],
+      nextSteps: [
+        'নিকটস্থ স্বাস্থ্যকেন্দ্রে গিয়ে ব্লাড সুগার পরীক্ষা করান।',
+        'চিকিৎসকের সাথে পরামর্শ করুন।',
+      ],
+      sources: [
+        HealthSource(
+          name: 'World Health Organization',
+          publisher: 'WHO',
+          url: 'https://who.int',
+        ),
+      ],
+      relatedArticles: [
+        HealthArticle(
+          slug: 'diabetes-symptoms',
+          titleEn: 'Diabetes Symptoms',
+          titleBn: 'ডায়াবেটিসের লক্ষণ',
+          summaryEn: 'Summary',
+          summaryBn: 'সারসংক্ষেপ',
+          contentEn: 'Content',
+          contentBn: 'বিষয়বস্তু',
+          category: 'diabetes',
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          healthRepositoryProvider.overrideWithValue(fakeRepo),
+        ],
+        child: const MaterialApp(home: HealthChatScreen()),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField), 'ডায়াবেটিস কি?');
+    await tester.testTextInput.receiveAction(TextInputAction.send);
+    await tester.pumpAndSettle();
+
+    expect(fakeRepo.lastQuestion, 'ডায়াবেটিস কি?');
+    expect(find.text('স্বাস্থ্য সহায়কের উত্তর'), findsOneWidget);
+
+    final selectableTextFinder = find.byType(SelectableText);
+    expect(selectableTextFinder, findsOneWidget);
+    final selectableText = tester.widget<SelectableText>(selectableTextFinder);
+    expect(selectableText.data, detailedLongAnswer);
+    expect(selectableText.data!.length, greaterThan(300));
+
+    expect(find.text('সতর্কতা'), findsOneWidget);
+    expect(find.text('• রক্তে শর্করা খুব বেশি বা খুব কম হলে অজ্ঞান হতে পারেন।'),
+        findsOneWidget);
+
+    expect(find.text('পরবর্তী পদক্ষেপ'), findsOneWidget);
+    expect(
+        find.text('• নিকটস্থ স্বাস্থ্যকেন্দ্রে গিয়ে ব্লাড সুগার পরীক্ষা করান।'),
+        findsOneWidget);
+    expect(find.text('• চিকিৎসকের সাথে পরামর্শ করুন।'), findsOneWidget);
+
+    expect(find.text('তথ্যের উৎস'), findsOneWidget);
+    expect(find.text('World Health Organization'), findsOneWidget);
+
+    expect(find.text('সম্পর্কিত নিবন্ধ'), findsOneWidget);
+    expect(find.text('ডায়াবেটিসের লক্ষণ'), findsOneWidget);
+  });
+
+  testWidgets('renders emergency answer card when isEmergency is true',
+      (tester) async {
+    final fakeRepo = _FakeHealthRepository();
+
+    fakeRepo.mockAnswer = const HealthAnswer(
+      answer: 'তীব্র বুকে ব্যথা হার্ট অ্যাটাকের লক্ষণ হতে পারে। জরুরি সাহায্য নিন।',
+      isEmergency: true,
+      language: 'bn',
+      responseType: 'emergency',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          healthRepositoryProvider.overrideWithValue(fakeRepo),
+        ],
+        child: const MaterialApp(home: HealthChatScreen()),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField), 'বুকে তীব্র ব্যথা');
+    await tester.testTextInput.receiveAction(TextInputAction.send);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(EmergencyWarningCard), findsOneWidget);
+    expect(
+      find.text('তীব্র বুকে ব্যথা হার্ট অ্যাটাকের লক্ষণ হতে পারে। জরুরি সাহায্য নিন।'),
+      findsWidgets,
+    );
+  });
+}

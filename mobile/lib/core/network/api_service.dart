@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -14,9 +16,9 @@ class ApiService {
             Dio(
               BaseOptions(
                 baseUrl: baseUrl ?? _defaultBaseUrl,
-                connectTimeout: const Duration(seconds: 120),
-                receiveTimeout: const Duration(seconds: 120),
-                sendTimeout: const Duration(seconds: 120),
+                connectTimeout: const Duration(seconds: 30),
+                receiveTimeout: const Duration(seconds: 300),
+                sendTimeout: const Duration(seconds: 60),
                 headers: const {
                   'Accept': 'application/json',
                   'Content-Type': 'application/json',
@@ -44,7 +46,8 @@ class ApiService {
 
   static String get _defaultBaseUrl {
     if (kIsWeb) return 'http://127.0.0.1:8000/api/v1';
-    return 'http://10.0.2.2:8000/api/v1';
+    if (Platform.isAndroid) return 'http://10.0.2.2:8000/api/v1';
+    return 'http://127.0.0.1:8000/api/v1';
   }
 
   Future<Map<String, dynamic>> post(
@@ -132,11 +135,52 @@ class ApiService {
     final data = error.response?.data;
     final payload =
         data is Map<String, dynamic> ? data : const <String, dynamic>{};
+    final statusCode = error.response?.statusCode;
+
+    String message;
+    if (error.response != null) {
+      switch (statusCode) {
+        case 401:
+          message = 'Authentication is required. Please log in.';
+        case 403:
+          message = 'You do not have permission to perform this action.';
+        case 422:
+          message = 'The request contains invalid data.';
+        case 500:
+          message = 'The server encountered an error. Please try again later.';
+        case 503:
+          message = 'The health assistant is temporarily unavailable.';
+        default:
+          message = 'Request failed with status ${statusCode}.';
+      }
+    } else if (payload['message'] is String && payload['message'].isNotEmpty) {
+      message = payload['message'] as String;
+    } else {
+      switch (error.type) {
+        case DioExceptionType.connectionError:
+          message =
+              'Cannot connect to the server. Please check your network and try again.';
+        case DioExceptionType.connectionTimeout:
+          message =
+              'The connection timed out. Please check your network and try again.';
+        case DioExceptionType.sendTimeout:
+          message =
+              'The request send timed out. Please check your network and try again.';
+        case DioExceptionType.receiveTimeout:
+          message =
+              'The receive timed out. Please check your network and try again.';
+        default:
+          message =
+              'Request failed. Please check your connection and try again.';
+      }
+    }
+
     return ApiException(
-      message: payload['message'] as String? ?? 'Request failed.',
-      statusCode: error.response?.statusCode,
+      message: message,
+      statusCode: statusCode,
       code: payload['code'] as String?,
       errors: payload['errors'] as Map<String, dynamic>? ?? const {},
     );
   }
 }
+

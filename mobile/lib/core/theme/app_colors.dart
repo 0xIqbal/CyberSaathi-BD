@@ -1,77 +1,88 @@
 import 'package:flutter/material.dart';
 
 abstract final class AppColors {
-  static const navy950 = Color(0xFF0F172A);
-  static const navy900 = Color(0xFF172033);
-  static const navy800 = Color(0xFF26364F);
-  static const teal700 = Color(0xFF0D9488);
-  static const teal600 = Color(0xFF14B8A6);
-  static const teal100 = Color(0xFFCCFBF1);
-  static const teal50 = Color(0xFFF0FDFA);
-  static const medicalBlue = Color(0xFF2563EB);
-  static const cyan = Color(0xFF22D3EE);
-  static const purple = Color(0xFF8B5CF6);
-  static const medicalBlueBackground = Color(0xFFEFF6FF);
-  static const documentAmber = Color(0xFFD97706);
-  static const documentAmberBackground = Color(0xFFFEF3C7);
-  static const evidenceIndigo = Color(0xFF4F46E5);
-  static const evidenceIndigoBackground = Color(0xFFEEF2FF);
+  // Deep Midnight & Electric Violet Portfolio Palette
+  static const obsidian = Color(0xFF0B0A14);
+  static const forestSurface = Color(0xFF131122);
+  static const forestElevated = Color(0xFF1B1830);
+  static const forestBorder = Color(0xFF2B264A);
+  static const emerald = Color(0xFF8B5CF6);
+  static const emeraldDark = Color(0xFF5B21B6);
+  static const emeraldGlow = Color(0xFFA78BFA);
+  static const emeraldTint = Color(0xFF1F183D);
 
-  static const surface = Color(0xFFF8FAFC);
-  static const surfaceContainer = Color(0xFFFFFFFF);
-  static const surfaceMuted = Color(0xFFF1F5F9);
-  static const border = Color(0xFFE2E8F0);
-  static const text = Color(0xFF172033);
-  static const textMuted = Color(0xFF64748B);
-  static const success = Color(0xFF16A34A);
-  static const successBackground = Color(0xFFE4F5EC);
-  static const warning = Color(0xFF9A6700);
-  static const warningBackground = Color(0xFFFFF4D6);
-  static const danger = Color(0xFFDC2626);
-  static const dangerBackground = Color(0xFFFFEDEA);
-  static const info = Color(0xFF1769AA);
-  static const infoBackground = Color(0xFFE7F1FB);
+  // Legacy constant aliases kept intact so all feature screens compile cleanly
+  static const navy950 = Color(0xFF07060D);
+  static const navy900 = Color(0xFF0F0D1C);
+  static const navy800 = Color(0xFF1B1830);
+  static const teal700 = emerald;
+  static const teal600 = emeraldGlow;
+  static const teal100 = emeraldTint;
+  static const teal50 = Color(0xFF141126);
+  static const medicalBlue = Color(0xFF38BDF8);
+  static const cyan = Color(0xFF818CF8);
+  static const purple = Color(0xFFC084FC);
+  static const medicalBlueBackground = Color(0xFF151936);
+  static const documentAmber = Color(0xFFFBBF24);
+  static const documentAmberBackground = Color(0xFF2A210D);
+  static const evidenceIndigo = Color(0xFFA78BFA);
+  static const evidenceIndigoBackground = Color(0xFF1F183D);
+
+  static const surface = obsidian;
+  static const surfaceContainer = forestSurface;
+  static const surfaceMuted = forestElevated;
+  static const border = forestBorder;
+  static const text = Color(0xFFF5F3FF);
+  static const textMuted = Color(0xFF9E99BD);
+  static const success = emerald;
+  static const successBackground = emeraldTint;
+  static const warning = Color(0xFFFBBF24);
+  static const warningBackground = Color(0xFF2A210D);
+  static const danger = Color(0xFFF87171);
+  static const dangerBackground = Color(0xFF2E131A);
+  static const info = Color(0xFF818CF8);
+  static const infoBackground = Color(0xFF171636);
 
   static BoxShadow get softShadow => BoxShadow(
-        color: Colors.black.withValues(alpha: 0.04),
-        blurRadius: 16,
-        offset: const Offset(0, 6),
-      );
-
-  static BoxShadow get cardShadow => BoxShadow(
-        color: navy950.withValues(alpha: 0.07),
+        color: Colors.black.withValues(alpha: 0.42),
         blurRadius: 20,
         offset: const Offset(0, 8),
       );
 
+  static BoxShadow get cardShadow => BoxShadow(
+        color: emerald.withValues(alpha: 0.18),
+        blurRadius: 34,
+        offset: const Offset(0, 12),
+      );
+
   static const lightScheme = ColorScheme(
-    brightness: Brightness.light,
-    primary: teal700,
-    onPrimary: Colors.white,
-    primaryContainer: teal100,
-    onPrimaryContainer: navy950,
-    secondary: navy800,
-    onSecondary: Colors.white,
-    secondaryContainer: Color(0xFFDCEAF4),
-    onSecondaryContainer: navy950,
-    tertiary: Color(0xFF6750A4),
-    onTertiary: Colors.white,
-    tertiaryContainer: Color(0xFFEADDFF),
-    onTertiaryContainer: Color(0xFF21005D),
+    brightness: Brightness.dark,
+    primary: emerald,
+    onPrimary: Color(0xFFFFFFFF),
+    primaryContainer: emeraldTint,
+    onPrimaryContainer: Color(0xFFDDD6FE),
+    secondary: forestElevated,
+    onSecondary: text,
+    secondaryContainer: Color(0xFF221D3D),
+    onSecondaryContainer: text,
+    tertiary: cyan,
+    onTertiary: Color(0xFFFFFFFF),
+    tertiaryContainer: Color(0xFF1B1A40),
+    onTertiaryContainer: Color(0xFFE0E7FF),
     error: danger,
-    onError: Colors.white,
+    onError: Color(0xFF2B090B),
     errorContainer: dangerBackground,
-    onErrorContainer: Color(0xFF410002),
-    surface: surface,
+    onErrorContainer: Color(0xFFFECACA),
+    surface: obsidian,
     onSurface: text,
-    surfaceContainerHighest: Color(0xFFE7EEF2),
+    surfaceContainerHighest: forestElevated,
     onSurfaceVariant: textMuted,
-    outline: Color(0xFF71828C),
-    outlineVariant: border,
+    outline: Color(0xFF3E3766),
+    outlineVariant: forestBorder,
     shadow: Colors.black,
     scrim: Colors.black,
-    inverseSurface: navy900,
-    onInverseSurface: Colors.white,
-    inversePrimary: Color(0xFF5CDBD8),
+    inverseSurface: text,
+    onInverseSurface: obsidian,
+    inversePrimary: emeraldDark,
   );
 }

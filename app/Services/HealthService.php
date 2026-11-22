@@ -2,6 +2,4 @@
 
 namespace App\Services;
 
-final class HealthService
-{
-}
+final class HealthService {}

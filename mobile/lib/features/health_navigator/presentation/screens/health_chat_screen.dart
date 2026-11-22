@@ -21,6 +21,7 @@ class HealthChatScreen extends ConsumerStatefulWidget {
 
 class _HealthChatScreenState extends ConsumerState<HealthChatScreen> {
   final _controller = TextEditingController();
+  HealthNotifier? _healthNotifier;
   static const _suggestions = [
     'জ্বর হলে কী করব?',
     'গর্ভাবস্থায় কী কী খেয়াল রাখব?',
@@ -28,8 +29,14 @@ class _HealthChatScreenState extends ConsumerState<HealthChatScreen> {
   ];
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _healthNotifier = ref.read(healthProvider.notifier);
+  }
+
+  @override
   void dispose() {
-    ref.read(healthProvider.notifier).stopSpeaking();
+    _healthNotifier?.stopSpeaking();
     _controller.dispose();
     super.dispose();
   }

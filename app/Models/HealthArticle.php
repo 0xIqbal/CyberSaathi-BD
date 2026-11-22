@@ -21,6 +21,7 @@ final class HealthArticle extends Model
         'content_en',
         'category',
         'keywords',
+        'reviewed_guidance',
         'status',
         'reviewed_at',
         'published_at',
@@ -30,6 +31,7 @@ final class HealthArticle extends Model
     {
         return [
             'keywords' => 'array',
+            'reviewed_guidance' => 'array',
             'reviewed_at' => 'datetime',
             'published_at' => 'datetime',
         ];
